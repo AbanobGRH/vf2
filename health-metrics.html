@@ -132,14 +132,18 @@
                 <div class="metric-card">
                     <div class="metric-content">
                         <div class="metric-info">
-                            <p class="metric-label">Blood Pressure</p>
-                            <p class="metric-value">120/80 <span class="metric-unit">mmHg</span></p>
-                            <p class="metric-status improving">● Improving <span class="beta-tag">BETA</span></p>
-                            <p class="metric-average">Avg: 125/82 mmHg</p>
+                            <p class="metric-label">Blood Glucose</p>
+                            <p class="metric-value">95 <span class="metric-unit">mg/dL</span></p>
+                            <p class="metric-status normal">● Stable <span class="beta-tag">BETA</span></p>
+                            <p class="metric-average">Avg: 98 mg/dL</p>
                         </div>
-                        <div class="metric-icon blood-pressure">
+                        <div class="metric-icon glucose">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"></polyline>
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14,2 14,8 20,8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10,9 9,9 8,9"></polyline>
                             </svg>
                         </div>
                     </div>
@@ -165,25 +169,6 @@
                     </div>
                 </div>
 
-                <div class="metric-card">
-                    <div class="metric-content">
-                        <div class="metric-info">
-                            <p class="metric-label">Blood Glucose</p>
-                            <p class="metric-value">95 <span class="metric-unit">mg/dL</span></p>
-                            <p class="metric-status normal">● Stable <span class="beta-tag">BETA</span></p>
-                            <p class="metric-average">Avg: 98 mg/dL</p>
-                        </div>
-                        <div class="metric-icon glucose">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14,2 14,8 20,8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10,9 9,9 8,9"></polyline>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Charts and Detailed View -->
@@ -335,5 +320,6 @@
 
     <script src="assets/js/main.js"></script>
     <script src="assets/js/health-metrics.js"></script>
+    <script src="assets/js/ai-analytics.js"></script>
 </body>
 </html>
