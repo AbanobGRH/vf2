@@ -5,8 +5,7 @@ class VitaAIAnalytics {
         this.apiEndpoint = 'https://ai.hackclub.com/api/analyze';
         this.apiKey = 'vita_api_key_2024';
         this.userId = '550e8400-e29b-41d4-a716-446655440000';
-        this.analysisInterval = 300000; // 5 minutes
-        this.lastAnalysis = 0;
+        this.manualAnalysisOnly = true; // Changed to manual only
     }
 
     async sendVitalsToAI(vitals) {
@@ -209,17 +208,11 @@ class VitaAIAnalytics {
         }, 2000);
     }
 
-    async analyzeCurrentVitals() {
-        const currentTime = Date.now();
-        if (currentTime - this.lastAnalysis < this.analysisInterval) {
-            return; // Too soon for another analysis
-        }
-
+    async analyzeCurrentVitals() {        
         // Get current vitals from the page
         const vitals = this.getCurrentVitals();
         if (vitals) {
             await this.sendVitalsToAI(vitals);
-            this.lastAnalysis = currentTime;
         }
     }
 
@@ -239,71 +232,15 @@ class VitaAIAnalytics {
         };
     }
 
-    startContinuousAnalysis() {
-        // Analyze vitals every 5 minutes
-        setInterval(() => {
-            this.analyzeCurrentVitals();
-        }, this.analysisInterval);
-
-        // Initial analysis
-        setTimeout(() => {
-            this.analyzeCurrentVitals();
-        }, 5000); // Wait 5 seconds after page load
-    }
+    // Removed automatic analysis - now manual only
 }
 
 // Initialize AI Analytics
 document.addEventListener('DOMContentLoaded', function() {
     const aiAnalytics = new VitaAIAnalytics();
     
-    // Start continuous analysis
-    aiAnalytics.startContinuousAnalysis();
-    
     // Make available globally
     window.VitaAI = aiAnalytics;
-    
-    // Add AI analysis button to health metrics page
-    if (window.location.pathname.includes('health-metrics.html')) {
-        const pageHeader = document.querySelector('.page-header');
-        if (pageHeader) {
-            const aiButton = document.createElement('button');
-            aiButton.className = 'ai-analysis-btn';
-            aiButton.innerHTML = `
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 12l2 2 4-4"></path>
-                    <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
-                    <path d="M3 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
-                    <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
-                    <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
-                </svg>
-                AI Analysis
-            `;
-            aiButton.style.cssText = `
-                margin-left: 1rem;
-                padding: 0.5rem 1rem;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border: none;
-                border-radius: 1rem;
-                font-size: 0.875rem;
-                font-weight: 500;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                transition: all 0.3s ease;
-            `;
-            
-            aiButton.addEventListener('click', () => {
-                aiAnalytics.analyzeCurrentVitals();
-                if (window.VitaApp) {
-                    window.VitaApp.showNotification('Running AI analysis on current vitals...', 'info');
-                }
-            });
-            
-            pageHeader.appendChild(aiButton);
-        }
-    }
 });
 
 // Add custom styles for AI features

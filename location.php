@@ -1,3 +1,36 @@
+<?php
+session_start();
+require_once 'api/config.php';
+
+// Get user data
+$userId = '550e8400-e29b-41d4-a716-446655440000';
+$pdo = getDBConnection();
+
+// Get latest location
+$stmt = $pdo->prepare("
+    SELECT * FROM locations 
+    WHERE user_id = ? 
+    ORDER BY location_timestamp DESC 
+    LIMIT 1
+");
+$stmt->execute([$userId]);
+$latestLocation = $stmt->fetch();
+
+// Get safe zones
+$stmt = $pdo->prepare("SELECT * FROM safe_zones WHERE user_id = ? AND is_active = TRUE ORDER BY name");
+$stmt->execute([$userId]);
+$safeZones = $stmt->fetchAll();
+
+// Get location history
+$stmt = $pdo->prepare("
+    SELECT * FROM locations 
+    WHERE user_id = ? 
+    ORDER BY location_timestamp DESC 
+    LIMIT 10
+");
+$stmt->execute([$userId]);
+$locationHistory = $stmt->fetchAll();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +44,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar (same as other pages) -->
+        <!-- Sidebar -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
@@ -28,33 +61,33 @@
                 </button>
             </div>
             <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">
+                <li><a href="index.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"></polyline>
                     </svg>
                     Dashboard
                 </a></li>
-                <li><a href="health-metrics.html" class="nav-link">
+                <li><a href="health-metrics.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     Health Metrics
                 </a></li>
-                <li><a href="location.html" class="nav-link active">
+                <li><a href="location.php" class="nav-link active">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                     </svg>
                     Location
                 </a></li>
-                <li><a href="medication.html" class="nav-link">
+                <li><a href="medication.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M4.5 16.5c-1.5 1.5-1.5 3.5 0 5s3.5 1.5 5 0l12-12c1.5-1.5 1.5-3.5 0-5s-3.5-1.5-5 0l-12 12z"></path>
                         <path d="M15 7l3 3"></path>
                     </svg>
                     Medication
                 </a></li>
-                <li><a href="alerts.html" class="nav-link">
+                <li><a href="alerts.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                         <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -62,14 +95,14 @@
                     </svg>
                     Alerts
                 </a></li>
-                <li><a href="profile.html" class="nav-link">
+                <li><a href="profile.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                     Profile
                 </a></li>
-                <li><a href="device-setup.html" class="nav-link">
+                <li><a href="device-setup.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -122,7 +155,14 @@
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
                             <p>Interactive Map View</p>
-                            <p class="map-address">123 Oak Street, Springfield</p>
+                            <p class="map-address">
+                                <?php if ($latestLocation): ?>
+                                    Lat: <?= number_format($latestLocation['latitude'], 6) ?>, 
+                                    Lng: <?= number_format($latestLocation['longitude'], 6) ?>
+                                <?php else: ?>
+                                    123 Oak Street, Springfield
+                                <?php endif; ?>
+                            </p>
                         </div>
                     </div>
 
@@ -134,19 +174,35 @@
                                 <polyline points="9,22 9,12 15,12 15,22"></polyline>
                             </svg>
                             <div>
-                                <p class="location-status">Currently at Home</p>
-                                <p class="location-time">Safe Zone • Last updated 2 min ago</p>
+                                <p class="location-status">
+                                    <?= $latestLocation && $latestLocation['is_safe_zone'] ? 'Currently in Safe Zone' : 'Currently at Home' ?>
+                                </p>
+                                <p class="location-time">
+                                    <?php if ($latestLocation): ?>
+                                        Last updated <?= date('g:i A', strtotime($latestLocation['location_timestamp'])) ?>
+                                    <?php else: ?>
+                                        Safe Zone • Last updated 2 min ago
+                                    <?php endif; ?>
+                                </p>
                             </div>
                         </div>
                         
                         <div class="location-stats">
                             <div class="stat-item">
                                 <p class="stat-label">Coordinates</p>
-                                <p class="stat-value">39.7392, -104.9903</p>
+                                <p class="stat-value">
+                                    <?php if ($latestLocation): ?>
+                                        <?= number_format($latestLocation['latitude'], 4) ?>, <?= number_format($latestLocation['longitude'], 4) ?>
+                                    <?php else: ?>
+                                        39.7392, -104.9903
+                                    <?php endif; ?>
+                                </p>
                             </div>
                             <div class="stat-item">
                                 <p class="stat-label">Accuracy</p>
-                                <p class="stat-value">±3 meters</p>
+                                <p class="stat-value">
+                                    <?= $latestLocation ? '±' . $latestLocation['accuracy'] . ' meters' : '±3 meters' ?>
+                                </p>
                             </div>
                         </div>
 
@@ -170,50 +226,42 @@
                     </div>
                     
                     <div class="zones-list">
-                        <div class="zone-item active">
-                            <div class="zone-status"></div>
-                            <div class="zone-info">
-                                <div class="zone-header">
-                                    <span class="zone-name">Home</span>
-                                    <span class="zone-radius">50 meters</span>
-                                </div>
-                                <p class="zone-address">123 Oak Street, Springfield</p>
-                                <div class="zone-actions">
-                                    <button class="zone-action-btn edit">Edit</button>
-                                    <button class="zone-action-btn remove">Remove</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="zone-item active">
-                            <div class="zone-status"></div>
-                            <div class="zone-info">
-                                <div class="zone-header">
-                                    <span class="zone-name">Pharmacy</span>
-                                    <span class="zone-radius">25 meters</span>
-                                </div>
-                                <p class="zone-address">456 Main Street, Springfield</p>
-                                <div class="zone-actions">
-                                    <button class="zone-action-btn edit">Edit</button>
-                                    <button class="zone-action-btn remove">Remove</button>
+                        <?php if (empty($safeZones)): ?>
+                            <div class="zone-item active">
+                                <div class="zone-status"></div>
+                                <div class="zone-info">
+                                    <div class="zone-header">
+                                        <span class="zone-name">Home</span>
+                                        <span class="zone-radius">50 meters</span>
+                                    </div>
+                                    <p class="zone-address">123 Oak Street, Springfield</p>
+                                    <div class="zone-actions">
+                                        <button class="zone-action-btn edit">Edit</button>
+                                        <button class="zone-action-btn remove">Remove</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="zone-item active">
-                            <div class="zone-status"></div>
-                            <div class="zone-info">
-                                <div class="zone-header">
-                                    <span class="zone-name">Hospital</span>
-                                    <span class="zone-radius">100 meters</span>
+                        <?php else: ?>
+                            <?php foreach ($safeZones as $zone): ?>
+                                <div class="zone-item active">
+                                    <div class="zone-status"></div>
+                                    <div class="zone-info">
+                                        <div class="zone-header">
+                                            <span class="zone-name"><?= htmlspecialchars($zone['name']) ?></span>
+                                            <span class="zone-radius"><?= $zone['radius'] ?> meters</span>
+                                        </div>
+                                        <p class="zone-address">
+                                            Lat: <?= number_format($zone['latitude'], 6) ?>, 
+                                            Lng: <?= number_format($zone['longitude'], 6) ?>
+                                        </p>
+                                        <div class="zone-actions">
+                                            <button class="zone-action-btn edit">Edit</button>
+                                            <button class="zone-action-btn remove">Remove</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="zone-address">789 Medical Drive, Springfield</p>
-                                <div class="zone-actions">
-                                    <button class="zone-action-btn edit">Edit</button>
-                                    <button class="zone-action-btn remove">Remove</button>
-                                </div>
-                            </div>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -228,49 +276,37 @@
                     </div>
                     
                     <div class="history-list">
-                        <div class="history-item safe">
-                            <div class="history-status"></div>
-                            <div class="history-info">
-                                <div class="history-header">
-                                    <span class="history-location">Home</span>
-                                    <span class="history-time">2:45 PM</span>
+                        <?php if (empty($locationHistory)): ?>
+                            <div class="history-item safe">
+                                <div class="history-status"></div>
+                                <div class="history-info">
+                                    <div class="history-header">
+                                        <span class="history-location">Home</span>
+                                        <span class="history-time">2:45 PM</span>
+                                    </div>
+                                    <p class="history-duration">Duration: 45 min</p>
                                 </div>
-                                <p class="history-duration">Duration: 45 min</p>
                             </div>
-                        </div>
-
-                        <div class="history-item safe">
-                            <div class="history-status"></div>
-                            <div class="history-info">
-                                <div class="history-header">
-                                    <span class="history-location">Pharmacy</span>
-                                    <span class="history-time">1:30 PM</span>
+                        <?php else: ?>
+                            <?php foreach ($locationHistory as $location): ?>
+                                <div class="history-item safe">
+                                    <div class="history-status"></div>
+                                    <div class="history-info">
+                                        <div class="history-header">
+                                            <span class="history-location">
+                                                <?= $location['zone_name'] ?: 'Unknown Location' ?>
+                                            </span>
+                                            <span class="history-time">
+                                                <?= date('g:i A', strtotime($location['location_timestamp'])) ?>
+                                            </span>
+                                        </div>
+                                        <p class="history-duration">
+                                            Accuracy: ±<?= $location['accuracy'] ?>m
+                                        </p>
+                                    </div>
                                 </div>
-                                <p class="history-duration">Duration: 15 min</p>
-                            </div>
-                        </div>
-
-                        <div class="history-item safe">
-                            <div class="history-status"></div>
-                            <div class="history-info">
-                                <div class="history-header">
-                                    <span class="history-location">Walking Route</span>
-                                    <span class="history-time">12:00 PM</span>
-                                </div>
-                                <p class="history-duration">Duration: 30 min</p>
-                            </div>
-                        </div>
-
-                        <div class="history-item safe">
-                            <div class="history-status"></div>
-                            <div class="history-info">
-                                <div class="history-header">
-                                    <span class="history-location">Home</span>
-                                    <span class="history-time">11:15 AM</span>
-                                </div>
-                                <p class="history-duration">Duration: 3 hours</p>
-                            </div>
-                        </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

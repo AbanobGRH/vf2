@@ -1,3 +1,28 @@
+<?php
+session_start();
+require_once 'api/config.php';
+
+// Get user data
+$userId = '550e8400-e29b-41d4-a716-446655440000';
+$pdo = getDBConnection();
+
+// Get medications
+$stmt = $pdo->prepare("SELECT * FROM medications WHERE user_id = ? AND is_active = TRUE ORDER BY name");
+$stmt->execute([$userId]);
+$medications = $stmt->fetchAll();
+
+// Get today's medication reminders
+$stmt = $pdo->prepare("
+    SELECT mr.*, m.name, m.dosage, m.instructions 
+    FROM medication_reminders mr 
+    JOIN medications m ON mr.medication_id = m.id 
+    WHERE mr.user_id = ? 
+    AND DATE(mr.reminder_time) = CURDATE()
+    ORDER BY mr.reminder_time ASC
+");
+$stmt->execute([$userId]);
+$todayReminders = $stmt->fetchAll();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,33 +53,33 @@
                 </button>
             </div>
             <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">
+                <li><a href="index.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"></polyline>
                     </svg>
                     Dashboard
                 </a></li>
-                <li><a href="health-metrics.html" class="nav-link">
+                <li><a href="health-metrics.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     Health Metrics
                 </a></li>
-                <li><a href="location.html" class="nav-link">
+                <li><a href="location.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                     </svg>
                     Location
                 </a></li>
-                <li><a href="medication.html" class="nav-link active">
+                <li><a href="medication.php" class="nav-link active">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M4.5 16.5c-1.5 1.5-1.5 3.5 0 5s3.5 1.5 5 0l12-12c1.5-1.5 1.5-3.5 0-5s-3.5-1.5-5 0l-12 12z"></path>
                         <path d="M15 7l3 3"></path>
                     </svg>
                     Medication
                 </a></li>
-                <li><a href="alerts.html" class="nav-link">
+                <li><a href="alerts.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                         <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -62,14 +87,14 @@
                     </svg>
                     Alerts
                 </a></li>
-                <li><a href="profile.html" class="nav-link">
+                <li><a href="profile.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                     Profile
                 </a></li>
-                <li><a href="device-setup.html" class="nav-link">
+                <li><a href="device-setup.php" class="nav-link">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -111,55 +136,49 @@
                 </div>
                 
                 <div class="schedule-timeline">
-                    <div class="schedule-item completed">
-                        <div class="schedule-time">8:00 AM</div>
-                        <div class="schedule-content">
-                            <div class="medication-info">
-                                <h3>Lisinopril</h3>
-                                <p>10mg • Blood pressure</p>
-                            </div>
-                            <div class="schedule-status taken">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="20,6 9,17 4,12"></polyline>
-                                </svg>
-                                <span>Taken</span>
+                    <?php if (empty($todayReminders)): ?>
+                        <div class="schedule-item completed">
+                            <div class="schedule-time">No reminders</div>
+                            <div class="schedule-content">
+                                <div class="medication-info">
+                                    <h3>All medications up to date</h3>
+                                    <p>No scheduled doses for today</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="schedule-item upcoming">
-                        <div class="schedule-time">3:00 PM</div>
-                        <div class="schedule-content">
-                            <div class="medication-info">
-                                <h3>Metformin</h3>
-                                <p>500mg • Diabetes</p>
+                    <?php else: ?>
+                        <?php foreach ($todayReminders as $reminder): ?>
+                            <?php 
+                                $reminderTime = strtotime($reminder['reminder_time']);
+                                $now = time();
+                                $isPast = $reminderTime < $now;
+                                $status = $reminder['is_taken'] ? 'completed' : ($isPast ? 'missed' : 'upcoming');
+                            ?>
+                            <div class="schedule-item <?= $status ?>">
+                                <div class="schedule-time"><?= date('g:i A', $reminderTime) ?></div>
+                                <div class="schedule-content">
+                                    <div class="medication-info">
+                                        <h3><?= htmlspecialchars($reminder['name']) ?></h3>
+                                        <p><?= htmlspecialchars($reminder['dosage']) ?> • <?= htmlspecialchars($reminder['instructions']) ?></p>
+                                    </div>
+                                    <div class="schedule-status <?= $reminder['is_taken'] ? 'taken' : 'pending' ?>">
+                                        <?php if ($reminder['is_taken']): ?>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="20,6 9,17 4,12"></polyline>
+                                            </svg>
+                                            <span>Taken</span>
+                                        <?php else: ?>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <polyline points="12,6 12,12 16,14"></polyline>
+                                            </svg>
+                                            <span><?= $isPast ? 'Missed' : 'Due soon' ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="schedule-status pending">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12,6 12,12 16,14"></polyline>
-                                </svg>
-                                <span>Due in 30 min</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="schedule-item upcoming">
-                        <div class="schedule-time">8:00 PM</div>
-                        <div class="schedule-content">
-                            <div class="medication-info">
-                                <h3>Atorvastatin</h3>
-                                <p>20mg • Cholesterol</p>
-                            </div>
-                            <div class="schedule-status pending">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12,6 12,12 16,14"></polyline>
-                                </svg>
-                                <span>Due in 5 hours</span>
-                            </div>
-                        </div>
-                    </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -176,40 +195,25 @@
                     </div>
                     
                     <div class="medications-list">
-                        <div class="medication-item">
-                            <div class="medication-icon glucose">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14,2 14,8 20,8"></polyline>
-                                </svg>
+                        <?php foreach ($medications as $medication): ?>
+                            <div class="medication-item">
+                                <div class="medication-icon <?= strtolower(str_replace(' ', '-', $medication['condition_for'])) ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4.5 16.5c-1.5 1.5-1.5 3.5 0 5s3.5 1.5 5 0l12-12c1.5-1.5 1.5-3.5 0-5s-3.5-1.5-5 0l-12 12z"></path>
+                                        <path d="M15 7l3 3"></path>
+                                    </svg>
+                                </div>
+                                <div class="medication-details">
+                                    <h3><?= htmlspecialchars($medication['name']) ?></h3>
+                                    <p><?= htmlspecialchars($medication['dosage']) ?> • <?= htmlspecialchars($medication['frequency']) ?></p>
+                                    <span class="medication-condition"><?= htmlspecialchars($medication['condition_for']) ?></span>
+                                </div>
+                                <div class="medication-actions">
+                                    <button class="med-action-btn edit">Edit</button>
+                                    <button class="med-action-btn refill">Refill</button>
+                                </div>
                             </div>
-                            <div class="medication-details">
-                                <h3>Metformin</h3>
-                                <p>500mg • Twice daily</p>
-                                <span class="medication-condition">Diabetes</span>
-                            </div>
-                            <div class="medication-actions">
-                                <button class="med-action-btn edit">Edit</button>
-                                <button class="med-action-btn refill">Refill</button>
-                            </div>
-                        </div>
-
-                        <div class="medication-item">
-                            <div class="medication-icon cholesterol">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                </svg>
-                            </div>
-                            <div class="medication-details">
-                                <h3>Atorvastatin</h3>
-                                <p>20mg • Once daily</p>
-                                <span class="medication-condition">Cholesterol</span>
-                            </div>
-                            <div class="medication-actions">
-                                <button class="med-action-btn edit">Edit</button>
-                                <button class="med-action-btn refill">Refill</button>
-                            </div>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
 
@@ -278,7 +282,7 @@
                     <div class="refill-item warning">
                         <div class="refill-indicator"></div>
                         <div class="refill-info">
-                            <h3>Lisinopril</h3>
+                            <h3>Atorvastatin</h3>
                             <p>7 days remaining</p>
                         </div>
                         <button class="refill-btn">Order Refill</button>
