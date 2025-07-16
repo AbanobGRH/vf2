@@ -298,7 +298,7 @@ body {
 }
 
 .ai-analysis-btn {
-    margin-left: 1rem;
+    margin-left: auto;
     padding: 0.5rem 1rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -311,6 +311,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .ai-analysis-btn:hover {
@@ -321,6 +322,33 @@ body {
 .ai-analysis-btn svg {
     width: 1rem;
     height: 1rem;
+}
+
+.ai-analysis-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.ai-analysis-btn.analyzing {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.ai-analysis-btn.analyzing::after {
+    content: '';
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .page-header {

@@ -118,11 +118,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Add beta tags back for blood pressure and glucose
                 if (index === 1 || index === 3) {
+            const button = document.querySelector('.ai-analysis-btn');
+            if (!button) return;
+            
+            // Disable button and show loading state
+            button.disabled = true;
+            button.classList.add('analyzing');
+            button.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4"></path>
+                    <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                    <path d="M3 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                    <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                    <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                </svg>
+                Analyzing...
+            `;
+            
                     const betaTag = document.createElement('span');
-                    betaTag.className = 'beta-tag';
-                    betaTag.textContent = 'BETA';
-                    element.appendChild(betaTag);
-                }
+                window.VitaAI.analyzeCurrentVitals().finally(() => {
+                    // Re-enable button after analysis
+                    button.disabled = false;
+                    button.classList.remove('analyzing');
+                    button.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"></path>
+                            <path d="M21 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                            <path d="M3 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                            <path d="M12 21c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                            <path d="M12 3c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1z"></path>
+                        </svg>
+                        AI Analysis
+                    `;
+                });
             }
         });
     }
