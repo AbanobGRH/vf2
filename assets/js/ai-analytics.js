@@ -5,10 +5,19 @@ class VitaAIAnalytics {
         this.apiEndpoint = 'https://ai.hackclub.com/api/analyze';
         this.apiKey = 'vita_api_key_2024';
         this.userId = '550e8400-e29b-41d4-a716-446655440000';
-        this.manualAnalysisOnly = true; // Changed to manual only
+        this.isAnalyzing = false;
     }
 
     async sendVitalsToAI(vitals) {
+        if (this.isAnalyzing) {
+            if (window.VitaApp) {
+                window.VitaApp.showNotification('AI analysis already in progress...', 'info');
+            }
+            return null;
+        }
+        
+        this.isAnalyzing = true;
+        
         try {
             const payload = {
                 user_id: this.userId,
@@ -39,13 +48,16 @@ class VitaAIAnalytics {
             if (response.ok) {
                 const result = await response.json();
                 this.processAIResponse(result);
+                this.isAnalyzing = false;
                 return result;
             } else {
                 console.error('AI API Error:', response.status, response.statusText);
+                this.isAnalyzing = false;
                 return null;
             }
         } catch (error) {
             console.error('AI Analytics Error:', error);
+            this.isAnalyzing = false;
             return null;
         }
     }
@@ -209,30 +221,47 @@ class VitaAIAnalytics {
     }
 
     async analyzeCurrentVitals() {        
+        if (window.VitaApp) {
+            window.VitaApp.showNotification('Starting AI analysis of current vitals...', 'info');
+        }
+        
         // Get current vitals from the page
         const vitals = this.getCurrentVitals();
         if (vitals) {
-            await this.sendVitalsToAI(vitals);
+            const result = await this.sendVitalsToAI(vitals);
+            if (result) {
+                if (window.VitaApp) {
+                    window.VitaApp.showNotification('AI analysis completed successfully!', 'success');
+                }
+            } else {
+                if (window.VitaApp) {
+                    window.VitaApp.showNotification('AI analysis failed. Please try again.', 'error');
+                }
+            }
+        } else {
+            if (window.VitaApp) {
+                window.VitaApp.showNotification('Unable to read current vitals. Please refresh the page.', 'error');
+            }
         }
     }
 
     getCurrentVitals() {
-        const heartRateElement = document.querySelector('.metric-card:nth-child(1) .metric-value');
-        const spo2Element = document.querySelector('.metric-card:nth-child(2) .metric-value');
-        const glucoseElement = document.querySelector('.metric-card:nth-child(3) .metric-value');
+        // Updated selectors for the new 3-metric layout (removed blood pressure)
+        const heartRateElement = document.querySelector('.metric-card:first-child .metric-value');
+        const glucoseElement = document.querySelector('.metric-card:nth-child(2) .metric-value');
+        const spo2Element = document.querySelector('.metric-card:nth-child(3) .metric-value');
 
-        if (!heartRateElement || !spo2Element || !glucoseElement) {
+        if (!heartRateElement || !glucoseElement || !spo2Element) {
+            console.error('Could not find vital signs elements');
             return null;
         }
 
         return {
             heartRate: parseInt(heartRateElement.textContent),
-            spo2: parseInt(spo2Element.textContent),
-            glucoseLevel: parseInt(glucoseElement.textContent)
+            glucoseLevel: parseInt(glucoseElement.textContent),
+            spo2: parseInt(spo2Element.textContent)
         };
     }
-
-    // Removed automatic analysis - now manual only
 }
 
 // Initialize AI Analytics
