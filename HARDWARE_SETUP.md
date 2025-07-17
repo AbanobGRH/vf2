@@ -2,11 +2,12 @@
 
 ## 🔌 Power Requirements & Connections
 
-### **Power Supply (3.3V System)**
+### **Power Supply (3.3V System with TP4056 Charging)**
 All components work on **3.3V** from ESP32:
 
 ```
 Power Distribution:
+3.7V Li-Po Battery ↔ TP4056 Charging Module ↔ ESP32 VIN
 ESP32 (3.3V Output) → All Sensors
 ├── NEO7 GPS Module (3.3V)
 ├── MAX30100 Heart Rate Sensor (3.3V) 
@@ -14,7 +15,7 @@ ESP32 (3.3V Output) → All Sensors
 ├── MP3 TF 16P Module (3.3V)
 └── Speaker (via amplifier if needed)
 
-Battery: 3.7V Li-Po → ESP32 VIN (with built-in regulator)
+Charging: USB-C/Micro-USB → TP4056 → Battery + ESP32
 ```
 
 ## 📋 Required Libraries

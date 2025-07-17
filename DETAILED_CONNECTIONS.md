@@ -59,15 +59,26 @@ ESP32 GND ←→ Speaker Negative (-)
 ## 🔋 **Battery Monitoring**
 ```
 ESP32 Pin A0 (ADC0/GPIO36) ←→ Battery Voltage Divider Output
-Battery Positive (+) ←→ Voltage Divider Input
+TP4056 BAT+ ←→ Voltage Divider Input
 ESP32 GND ←→ Voltage Divider Ground
 ```
 
 **Voltage Divider Circuit:**
 ```
-Battery (+) ──[10kΩ]──┬──[10kΩ]── GND
+TP4056 BAT+ ──[10kΩ]──┬──[10kΩ]── GND
                       │
                       └── ESP32 A0
+```
+
+---
+
+## 🔌 **TP4056 Charging Module**
+```
+USB Input ←→ TP4056 USB+ and USB-
+TP4056 BAT+ ←→ 3.7V Li-Po Battery (+)
+TP4056 BAT- ←→ 3.7V Li-Po Battery (-)
+TP4056 OUT+ ←→ ESP32 VIN Pin
+TP4056 OUT- ←→ ESP32 GND Pin
 ```
 
 ---
@@ -82,8 +93,8 @@ LED Negative (Cathode) ←→ 220Ω Resistor ←→ ESP32 GND
 
 ## 🔌 **Power Connections**
 ```
-3.7V Li-Po Battery (+) ←→ ESP32 VIN Pin
-3.7V Li-Po Battery (-) ←→ ESP32 GND Pin
+TP4056 OUT+ ←→ ESP32 VIN Pin
+TP4056 OUT- ←→ ESP32 GND Pin
 ESP32 3.3V Output ←→ All Sensor VCC Pins
 ESP32 GND ←→ All Sensor GND Pins
 ```
@@ -94,8 +105,8 @@ ESP32 GND ←→ All Sensor GND Pins
 
 | ESP32 Pin | Function | Connected To | Component |
 |-----------|----------|--------------|-----------|
-| VIN | Power Input | Battery (+) 3.7V | Li-Po Battery |
-| GND | Ground | Battery (-), All GNDs | Common Ground |
+| VIN | Power Input | TP4056 OUT+ | TP4056 Module |
+| GND | Ground | TP4056 OUT-, All GNDs | Common Ground |
 | 3.3V | Power Output | All VCC pins | All Sensors |
 | GPIO2 | Digital Out | LED + (via resistor) | Status LED |
 | GPIO16 | UART2 RX | NEO7 GPS TX | GPS Module |
@@ -105,13 +116,19 @@ ESP32 GND ←→ All Sensor GND Pins
 | GPIO25 | UART (RX) | MP3 TF 16P TX | Audio Module |
 | GPIO26 | UART (TX) | MP3 TF 16P RX | Audio Module |
 | GPIO27 | PWM/DAC | Speaker (+) | Audio Output |
-| GPIO36 (A0) | ADC | Voltage Divider | Battery Monitor |
+| GPIO36 (A0) | ADC | Voltage Divider from TP4056 BAT+ | Battery Monitor |
 
 ---
 
 ## ⚡ **Power Distribution Diagram**
 ```
-3.7V Li-Po Battery
+USB Charger (5V)
+        │
+    TP4056 Charging Module
+        │
+3.7V Li-Po Battery ←→ TP4056 BAT+/BAT-
+        │
+    TP4056 OUT+/OUT-
         │
         ├── ESP32 VIN (Power Input)
         │
@@ -125,7 +142,7 @@ ESP32 3.3V Regulator Output
 
 Common Ground (GND)
         │
-        ├── Battery (-)
+        ├── TP4056 OUT-
         ├── ESP32 GND
         ├── All Sensor GND pins
         ├── Speaker (-)

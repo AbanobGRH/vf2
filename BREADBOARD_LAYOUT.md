@@ -31,6 +31,8 @@
 
 #### **Step 1: Power Rails**
 ```
+Connect TP4056 OUT+ → ESP32 VIN
+Connect TP4056 OUT- → ESP32 GND
 Connect ESP32 3.3V → Top positive rail (row 1)
 Connect ESP32 GND → Top negative rail (row 2)
 Connect ESP32 GND → Bottom negative rail (row 22)
@@ -91,20 +93,22 @@ Battery Monitor (Voltage Divider):
 ### **Jumper Wire Connections:**
 
 #### **Red Wires (3.3V Power):**
-1. ESP32 3.3V → Breadboard top rail (+)
-2. Top rail (+) → NEO7 VCC
-3. Top rail (+) → MAX30100 VIN
-4. Top rail (+) → MPU6050 VCC
-5. Top rail (+) → MP3 TF 16P VCC
+1. TP4056 OUT+ → ESP32 VIN
+2. ESP32 3.3V → Breadboard top rail (+)
+3. Top rail (+) → NEO7 VCC
+4. Top rail (+) → MAX30100 VIN
+5. Top rail (+) → MPU6050 VCC
+6. Top rail (+) → MP3 TF 16P VCC
 
 #### **Black Wires (Ground):**
-1. ESP32 GND → Breadboard top rail (-)
-2. ESP32 GND → Breadboard bottom rail (-)
-3. Top rail (-) → NEO7 GND
-4. Top rail (-) → MAX30100 GND
-5. Top rail (-) → MPU6050 GND
-6. Top rail (-) → MP3 TF 16P GND
-7. Bottom rail (-) → Speaker (-)
+1. TP4056 OUT- → ESP32 GND
+2. ESP32 GND → Breadboard top rail (-)
+3. ESP32 GND → Breadboard bottom rail (-)
+4. Top rail (-) → NEO7 GND
+5. Top rail (-) → MAX30100 GND
+6. Top rail (-) → MPU6050 GND
+7. Top rail (-) → MP3 TF 16P GND
+8. Bottom rail (-) → Speaker (-)
 
 #### **Signal Wires:**
 1. **Yellow:** ESP32 GPIO16 → NEO7 TX
@@ -115,15 +119,15 @@ Battery Monitor (Voltage Divider):
 6. **Gray:** ESP32 GPIO26 → MP3 TF 16P RX
 7. **White:** ESP32 GPIO27 → Speaker (+)
 8. **Brown:** ESP32 GPIO2 → LED Anode (via resistor)
-9. **Pink:** ESP32 GPIO36 → Voltage divider junction
+9. **Pink:** ESP32 GPIO36 → Voltage divider junction (from TP4056 BAT+)
 
 ### **Final Breadboard Layout:**
 ```
-Power Rails: 3.3V and GND distributed
+Power Rails: TP4056 → ESP32 → 3.3V and GND distributed
 Left Side: GPS module
 Center: Heart rate and IMU sensors (I2C bus)
 Right Side: MP3 audio module
-External: Speaker, LED, battery connections
+External: Speaker, LED, TP4056 charging module
 ```
 
 This layout keeps components organized, minimizes wire crossing, and maintains clean power distribution throughout the breadboard.
