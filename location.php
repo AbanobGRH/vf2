@@ -182,14 +182,10 @@ $locationHistory = [
                             </svg>
                             <div>
                                 <p class="location-status">
-                                    <?= $latestLocation && $latestLocation['is_safe_zone'] ? 'Currently in Safe Zone' : 'Currently at Home' ?>
+                                    Currently at Home
                                 </p>
                                 <p class="location-time">
-                                    <?php if ($latestLocation): ?>
-                                        Last updated <?= date('g:i A', strtotime($latestLocation['location_timestamp'])) ?>
-                                    <?php else: ?>
-                                        Safe Zone • Last updated 2 min ago
-                                    <?php endif; ?>
+                                    Safe Zone • Last updated 2 min ago
                                 </p>
                             </div>
                         </div>
@@ -198,17 +194,13 @@ $locationHistory = [
                             <div class="stat-item">
                                 <p class="stat-label">Coordinates</p>
                                 <p class="stat-value">
-                                    <?php if ($latestLocation): ?>
-                                        <?= number_format($latestLocation['latitude'], 4) ?>, <?= number_format($latestLocation['longitude'], 4) ?>
-                                    <?php else: ?>
-                                        39.7392, -104.9903
-                                    <?php endif; ?>
+                                    <?= number_format($latestLocation['latitude'], 4) ?>, <?= number_format($latestLocation['longitude'], 4) ?>
                                 </p>
                             </div>
                             <div class="stat-item">
                                 <p class="stat-label">Accuracy</p>
                                 <p class="stat-value">
-                                    <?= $latestLocation ? '±' . $latestLocation['accuracy'] . ' meters' : '±3 meters' ?>
+                                    ±<?= $latestLocation['accuracy'] ?> meters
                                 </p>
                             </div>
                         </div>
@@ -283,37 +275,24 @@ $locationHistory = [
                     </div>
                     
                     <div class="history-list">
-                        <?php if (empty($locationHistory)): ?>
+                        <?php foreach ($locationHistory as $location): ?>
                             <div class="history-item safe">
                                 <div class="history-status"></div>
                                 <div class="history-info">
                                     <div class="history-header">
-                                        <span class="history-location">Home</span>
-                                        <span class="history-time">2:45 PM</span>
+                                        <span class="history-location">
+                                            <?= $location['zone_name'] ?: 'Home' ?>
+                                        </span>
+                                        <span class="history-time">
+                                            <?= date('g:i A', strtotime($location['location_timestamp'])) ?>
+                                        </span>
                                     </div>
-                                    <p class="history-duration">Duration: 45 min</p>
+                                    <p class="history-duration">
+                                        Accuracy: ±<?= $location['accuracy'] ?>m
+                                    </p>
                                 </div>
                             </div>
-                        <?php else: ?>
-                            <?php foreach ($locationHistory as $location): ?>
-                                <div class="history-item safe">
-                                    <div class="history-status"></div>
-                                    <div class="history-info">
-                                        <div class="history-header">
-                                            <span class="history-location">
-                                                <?= $location['zone_name'] ?: 'Unknown Location' ?>
-                                            </span>
-                                            <span class="history-time">
-                                                <?= date('g:i A', strtotime($location['location_timestamp'])) ?>
-                                            </span>
-                                        </div>
-                                        <p class="history-duration">
-                                            Accuracy: ±<?= $location['accuracy'] ?>m
-                                        </p>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
@@ -363,5 +342,11 @@ $locationHistory = [
 
     <script src="assets/js/main.js"></script>
     <script src="assets/js/location.js"></script>
+    <script>
+        // Auto-refresh data every 5 seconds (but location data is constant)
+        setInterval(function() {
+            location.reload();
+        }, 5000);
+    </script>
 </body>
 </html>
