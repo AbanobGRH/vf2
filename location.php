@@ -6,30 +6,37 @@ require_once 'api/config.php';
 $userId = '550e8400-e29b-41d4-a716-446655440000';
 $pdo = getDBConnection();
 
-// Get latest location
-$stmt = $pdo->prepare("
-    SELECT * FROM locations 
-    WHERE user_id = ? 
-    ORDER BY location_timestamp DESC 
-    LIMIT 1
-");
-$stmt->execute([$userId]);
-$latestLocation = $stmt->fetch();
+// Use constant location data instead of database
+$latestLocation = [
+    'latitude' => 39.7392,
+    'longitude' => -104.9903,
+    'accuracy' => 3.0,
+    'location_timestamp' => date('Y-m-d H:i:s'),
+    'is_safe_zone' => true
+];
 
 // Get safe zones
 $stmt = $pdo->prepare("SELECT * FROM safe_zones WHERE user_id = ? AND is_active = TRUE ORDER BY name");
 $stmt->execute([$userId]);
 $safeZones = $stmt->fetchAll();
 
-// Get location history
-$stmt = $pdo->prepare("
-    SELECT * FROM locations 
-    WHERE user_id = ? 
-    ORDER BY location_timestamp DESC 
-    LIMIT 10
-");
-$stmt->execute([$userId]);
-$locationHistory = $stmt->fetchAll();
+// Use constant location history
+$locationHistory = [
+    [
+        'latitude' => 39.7392,
+        'longitude' => -104.9903,
+        'location_timestamp' => date('Y-m-d H:i:s', strtotime('-5 minutes')),
+        'zone_name' => 'Home',
+        'accuracy' => 3.0
+    ],
+    [
+        'latitude' => 39.7390,
+        'longitude' => -104.9905,
+        'location_timestamp' => date('Y-m-d H:i:s', strtotime('-15 minutes')),
+        'zone_name' => 'Home',
+        'accuracy' => 4.0
+    ]
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">

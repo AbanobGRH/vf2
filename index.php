@@ -326,5 +326,11 @@ $deviceStatus = [
 
     <script src="assets/js/main.js"></script>
     <script src="assets/js/ai-analytics.js"></script>
+    <script>
+        // Auto-refresh data every 5 seconds
+        setInterval(function() {
+            location.reload();
+        }, 5000);
+    </script>
 </body>
 </html>

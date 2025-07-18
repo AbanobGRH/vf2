@@ -343,6 +343,11 @@ if (!empty($readings)) {
                 }
             }
         }
+        
+        // Auto-refresh data every 5 seconds
+        setInterval(function() {
+            location.reload();
+        }, 5000);
     </script>
     <script src="assets/js/ai-analytics.js"></script>
 </body>
