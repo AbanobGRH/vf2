@@ -2,8 +2,8 @@
 // Database configuration
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'vita_health');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_USER', 'root'); // Change to your MariaDB username
+define('DB_PASS', ''); // Change to your MariaDB password
 
 // API configuration
 define('API_KEY', 'vita_api_key_2024');
